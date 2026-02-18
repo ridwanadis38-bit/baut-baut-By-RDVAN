@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Katalog Baut Motor</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0d0d0d;
+  color:#fff;
+}
+
+header{
+  padding:20px;
+  text-align:center;
+  background:#111;
+  box-shadow:0 2px 15px rgba(255,0,60,0.4);
+}
+
+h1{
+  margin:0;
+  color:#ff003c;
+}
+
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+/* FORM */
+.form-box{
+  background:#141414;
+  padding:20px;
+  border-radius:12px;
+  margin-bottom:30px;
+  box-shadow:0 0 15px rgba(255,0,60,0.3);
+}
+
+input, textarea{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  background:#000;
+  border:1px solid #333;
+  color:#fff;
+  border-radius:6px;
+}
+
+textarea{
+  resize:none;
+  height:80px;
+}
+
+button{
+  margin-top:15px;
+  padding:10px;
+  border:none;
+  background:#ff003c;
+  color:#fff;
+  border-radius:20px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:hover{
+  opacity:0.8;
+}
+
+/* CARD */
+.catalog{
+  display:grid;
+  gap:20px;
+}
+
+.card{
+  background:#141414;
+  padding:15px;
+  border-radius:12px;
+  box-shadow:0 0 15px rgba(255,0,60,0.3);
+}
+
+.images{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  margin-bottom:10px;
+}
+
+.images img{
+  height:110px;
+  border-radius:8px;
+}
+
+.card h3{
+  margin:0;
+  color:#ff003c;
+}
+
+.card p{
+  font-size:14px;
+  color:#ccc;
+}
+
+.delete-btn{
+  margin-top:10px;
+  background:#222;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Katalog Baut Motor</h1>
+</header>
+
+<div class="container">
+
+  <div class="form-box">
+    <h3>Tambah Baut Baru</h3>
+    <input type="text" id="judul" placeholder="Judul Baut">
+    <textarea id="deskripsi" placeholder="Deskripsi Baut"></textarea>
+    <input type="file" id="gambar" accept="image/*" multiple>
+    <button onclick="tambahData()">Tambah</button>
+  </div>
+
+  <div class="catalog" id="catalog"></div>
+
+</div>
+
+<script>
+function loadData(){
+  const data = JSON.parse(localStorage.getItem("bautData")) || [];
+  const catalog = document.getElementById("catalog");
+  catalog.innerHTML = "";
+
+  data.forEach((item,index)=>{
+    let imagesHTML = "";
+    item.gambar.forEach(img=>{
+      imagesHTML += `<img src="${img}">`;
+    });
+
+    catalog.innerHTML += `
+      <div class="card">
+        <div class="images">${imagesHTML}</div>
+        <h3>${item.judul}</h3>
+        <p>${item.deskripsi}</p>
+        <button class="delete-btn" onclick="hapusData(${index})">Hapus</button>
+      </div>
+    `;
+  });
+}
+
+function tambahData(){
+  const judul = document.getElementById("judul").value.trim();
+  const deskripsi = document.getElementById("deskripsi").value.trim();
+  const files = document.getElementById("gambar").files;
+
+  if(!judul || !deskripsi || files.length === 0){
+    alert("Isi semua dulu ya!");
+    return;
+  }
+
+  if(files.length > 3){
+    alert("Maksimal upload 3 foto!");
+    return;
+  }
+
+  let images = [];
+  let loaded = 0;
+
+  for(let i=0;i<files.length;i++){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      images.push(e.target.result);
+      loaded++;
+
+      if(loaded === files.length){
+        const data = JSON.parse(localStorage.getItem("bautData")) || [];
+        data.push({
+          judul: judul,
+          deskripsi: deskripsi,
+          gambar: images
+        });
+
+        localStorage.setItem("bautData", JSON.stringify(data));
+
+        document.getElementById("judul").value="";
+        document.getElementById("deskripsi").value="";
+        document.getElementById("gambar").value="";
+
+        loadData();
+      }
+    };
+    reader.readAsDataURL(files[i]);
+  }
+}
+
+function hapusData(index){
+  const data = JSON.parse(localStorage.getItem("bautData")) || [];
+  data.splice(index,1);
+  localStorage.setItem("bautData", JSON.stringify(data));
+  loadData();
+}
+
+loadData();
+</script>
+
+</body>
+</html>
