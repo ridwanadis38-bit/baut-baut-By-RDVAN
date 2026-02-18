@@ -3,111 +3,108 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Penjelasan Baut Motor</title>
+<title>Katalog Baut Motor</title>
 
 <style>
-/* General */
+/* ===== BODY ===== */
 body{
   margin:0;
-  font-family:Arial, sans-serif;
+  font-family: Arial, sans-serif;
   background:#000;
   color:#fff;
-  text-align:center;
 }
 
+/* ===== HEADER ===== */
 header{
   padding:20px;
-  background:rgba(0,0,0,0.9);
+  text-align:center;
+  background:#111;
   box-shadow:0 2px 15px rgba(255,0,60,0.4);
 }
 
-h1{
-  margin:0;
-  color:#ff003c;
+h1{ 
+  margin:0; 
+  color:#ff003c; 
 }
 
+/* ===== CONTAINER ===== */
 .container{
-  padding:30px 20px;
-  max-width:700px;
+  max-width:900px;
   margin:auto;
-  text-align:center;
+  padding:20px;
 }
 
-/* Gambar Baut */
-.foto-baut{
-  width:60%;            /* gambar sedang */
-  max-width:350px;
-  border-radius:15px;
-  box-shadow:0 0 20px rgba(255,0,60,0.6);
-  margin:20px auto;
-  display:block;
+/* ===== FORM ===== */
+.form-box{
+  background:#111;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:30px;
 }
 
-/* Deskripsi */
-.deskripsi{
-  font-size:15px;
-  line-height:1.7;
-  color:#ccc;
+input, textarea{
+  width:100%;
+  padding:10px;
   margin-top:10px;
-  text-align:left; /* desktop & tablet */
-}
-
-/* Tombol kembali */
-.back-btn{
-  display:inline-block;
-  margin-top:30px;
-  padding:10px 20px;
-  border-radius:25px;
-  text-decoration:none;
-  font-weight:bold;
+  background:#000;
+  border:1px solid #333;
   color:#fff;
+  border-radius:5px;
+}
+
+button{
+  margin-top:10px;
+  padding:8px 14px;
+  border:none;
+  border-radius:20px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.btn-add{ background:#ff003c; color:#fff; }
+.btn-delete{ background:#444; color:#fff; margin-right:5px; }
+.btn-edit{ background:#ff8800; color:#fff; }
+
+/* ===== CARD / KATALOG ===== */
+.catalog{
+  display:grid;
+  gap:20px;
+}
+
+.card{
+  background:#111;
+  padding:15px;
+  border-radius:10px;
+  box-shadow:0 0 15px rgba(255,0,60,0.4);
+}
+
+.images{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  margin-bottom:10px;
+}
+
+.images img{
+  height:120px;
+  border-radius:8px;
+}
+
+.card h3{ margin:0; color:#ff003c; }
+.card p{ font-size:14px; color:#ccc; }
+
+/* ===== BACK LINK ===== */
+.back{
+  text-align:center;
+  margin:30px;
+}
+
+.back a{
+  text-decoration:none;
   background:#ff003c;
-  transition:0.3s;
-}
-
-.back-btn:hover{
-  background:#ff2e5e;
-}
-
-/* Responsive untuk semua ukuran layar */
-@media (max-width: 768px) {
-  .container{
-    padding:20px 15px;
-    text-align:center;
-  }
-
-  .foto-baut{
-    width:80%;
-    max-width:300px;
-  }
-
-  .deskripsi{
-    font-size:14px;
-    text-align:center;
-  }
-
-  .back-btn{
-    width:70%;
-    max-width:220px;
-    margin:20px auto 0;
-    display:block;
-  }
-}
-
-@media (max-width: 480px) {
-  .foto-baut{
-    width:90%;
-    max-width:250px;
-  }
-
-  .deskripsi{
-    font-size:13px;
-  }
-
-  .back-btn{
-    width:80%;
-    max-width:200px;
-  }
+  padding:10px 20px;
+  border-radius:20px;
+  color:#fff;
 }
 </style>
 </head>
@@ -115,24 +112,135 @@ h1{
 <body>
 
 <header>
-  <h1>Penjelasan Baut Motor</h1>
+  <h1>Katalog Baut Motor</h1>
 </header>
 
 <div class="container">
 
-  <!-- Gambar online supaya langsung muncul -->
-  <img src="https://i.imgur.com/0Z2Vh7K.jpg" alt="Baut Motor" class="foto-baut">
-
-  <div class="deskripsi">
-    <h3>Baut As Roda Depan</h3>
-    Ukuran kunci: 17mm<br>  
-    Fungsi: Mengunci as roda depan agar tidak lepas saat berkendara.<br>  
-    Tips: Pastikan dikencangkan sesuai torsi agar aman.
+  <!-- FORM TAMBAH / EDIT -->
+  <div class="form-box">
+    <h3>Tambah / Edit Baut</h3>
+    <input type="text" id="judul" placeholder="Judul Baut">
+    <textarea id="deskripsi" placeholder="Deskripsi Baut"></textarea>
+    <input type="file" id="gambar" accept="image/*" multiple>
+    <button class="btn-add" onclick="tambahData()">Simpan</button>
   </div>
 
-  <a href="index.html" class="back-btn">⬅ Kembali</a>
+  <!-- KATALOG BISA POSTING + EDIT + HAPUS -->
+  <div class="catalog" id="catalog"></div>
 
 </div>
+
+<div class="back">
+  <a href="index.html">⬅ Kembali</a>
+</div>
+
+<script>
+let editIndex = null;
+
+// ===== LOAD DATA DARI LOCALSTORAGE =====
+function loadData(){
+  const data = JSON.parse(localStorage.getItem("bautData")) || [];
+  const catalog = document.getElementById("catalog");
+  catalog.innerHTML = "";
+
+  data.forEach((item,index)=>{
+    let imagesHTML = "";
+    item.gambar.forEach(img=>{
+      imagesHTML += `<img src="${img}">`;
+    });
+
+    catalog.innerHTML += `
+      <div class="card">
+        <div class="images">${imagesHTML}</div>
+        <h3>${item.judul}</h3>
+        <p>${item.deskripsi}</p>
+        <button class="btn-edit" onclick="editData(${index})">Edit</button>
+        <button class="btn-delete" onclick="hapusData(${index})">Hapus</button>
+      </div>
+    `;
+  });
+}
+
+// ===== TAMBAH / UPDATE DATA =====
+function tambahData(){
+  const judul = document.getElementById("judul").value;
+  const deskripsi = document.getElementById("deskripsi").value;
+  const files = document.getElementById("gambar").files;
+
+  if(!judul || !deskripsi){
+    alert("Isi judul dan deskripsi dulu ya!");
+    return;
+  }
+
+  let data = JSON.parse(localStorage.getItem("bautData")) || [];
+  let images = [];
+  const maxFiles = Math.min(files.length,3);
+  let loaded = 0;
+
+  // JIKA TIDAK UPLOAD FILE (EDIT SAJA)
+  if(maxFiles === 0 && editIndex !== null){
+    data[editIndex] = {judul, deskripsi, gambar:data[editIndex].gambar};
+    editIndex = null;
+    localStorage.setItem("bautData", JSON.stringify(data));
+    resetForm();
+    loadData();
+    return;
+  }
+
+  // JIKA TIDAK ADA FILE BARU SAAT TAMBAH
+  if(maxFiles === 0){
+    alert("Upload minimal 1 foto!");
+    return;
+  }
+
+  for(let i=0;i<maxFiles;i++){
+    const reader = new FileReader();
+    reader.onload = function(){
+      images.push(reader.result);
+      loaded++;
+      if(loaded === maxFiles){
+        if(editIndex !== null){
+          data[editIndex] = {judul, deskripsi, gambar:images};
+          editIndex = null;
+        }else{
+          data.push({judul, deskripsi, gambar:images});
+        }
+        localStorage.setItem("bautData", JSON.stringify(data));
+        resetForm();
+        loadData();
+      }
+    };
+    reader.readAsDataURL(files[i]);
+  }
+}
+
+// ===== HAPUS DATA =====
+function hapusData(index){
+  let data = JSON.parse(localStorage.getItem("bautData")) || [];
+  data.splice(index,1);
+  localStorage.setItem("bautData", JSON.stringify(data));
+  loadData();
+}
+
+// ===== EDIT DATA =====
+function editData(index){
+  let data = JSON.parse(localStorage.getItem("bautData")) || [];
+  document.getElementById("judul").value = data[index].judul;
+  document.getElementById("deskripsi").value = data[index].deskripsi;
+  editIndex = index;
+}
+
+// ===== RESET FORM =====
+function resetForm(){
+  document.getElementById("judul").value="";
+  document.getElementById("deskripsi").value="";
+  document.getElementById("gambar").value="";
+}
+
+// ===== LOAD DATA PERTAMA KALI =====
+loadData();
+</script>
 
 </body>
 </html>
